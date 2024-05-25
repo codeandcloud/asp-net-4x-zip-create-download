@@ -1,0 +1,66 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<main>
+    <section class="row" aria-labelledby="aspnetTitle">
+        <h1 id="title">Download ZIP File</h1>
+    </section>
+
+    <div class="row">
+        <section class="col-offset-md-4 col-md-4" aria-labelledby="librariesTitle">
+            <button id="downloadZip" class="btn btn-primary">Download</button>
+        </section>
+    </div>
+</main>
+@section scripts {
+    <script type="text/javascript">
+        const BaseUrl = "https://localhost:44387/api/zipper/";
+        
+        function getDateTimeInNumber() {
+            // Intl.DateTimeFormat doesn't work with IE
+            const mediumTime = new Intl.DateTimeFormat("en-GB", {
+                timeStyle: "medium",
+                dateStyle: "short",
+                hour12: false
+            });
+            const date = mediumTime.format(Date.now());
+            return date.replace(/\D/g, '');
+        }
+
+        function GetFileName(queryCode) {
+            return "FlexQuery_" + queryCode.toUpperCase() + "_" + getDateTimeInNumber() + ".zip";
+        }
+        function downloadFile() {
+
+            const model = {
+                QuerCode: "code1",
+                objFilterList: "filter1"
+            };
+            const url = BaseUrl + "DownloadFile";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(model),
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = GetFileName(model.QuerCode);
+                document.body.appendChild(a);
+                a.click();
+                a.remove();      
+            });
+        }
+
+        $('#downloadZip').on('click', function (evt) {
+            evt.preventDefault();
+            downloadFile();
+        });
+
+    </script>
+}
